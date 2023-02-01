@@ -1,14 +1,16 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import json
-from .serializers import CreateUserSerializer
+from .serializers import CreateUserSerializer, CommentSerializer
 from django.contrib.auth.models import User
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from .permissions import CustomeAuth
+from .models import CommentModel
 
 class TestShow(APIView):
     authentication_classes=[TokenAuthentication]
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated, CustomeAuth]
     def get(self, request, who):
         return Response({'user': str(request.user), 'auth':str(request.auth)})
     # validatio
@@ -28,3 +30,8 @@ class CreateUser(APIView):
         return Response(validation.errors)
 
         
+class HomeView(APIView):
+    def get(self, request):
+        posts= CommentModel.objects.all()
+        data= CommentSerializer(instance=posts, many=True).data
+        return Response(data)

@@ -1,5 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from .models import CommentModel
+from rest_framework.response import Response
+import json
 
 
 def unique_email(useremail):
@@ -29,9 +32,14 @@ class CreateUserSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data['password']!= data['password2']:
             raise serializers.ValidationError('passwords must match dadash')
-        return data
+        return data    
         
         
-        
-        
-        
+class CommentSerializer(serializers.ModelSerializer):
+    subcomment= serializers.SerializerMethodField()
+    class Meta:
+        model= CommentModel
+        fields= ['body', 'is_reply', 'from_comment','user', 'subcomment']
+    def get_subcomment(self,obj):
+        if obj.subcomment:
+            return CommentSerializer(instance= obj.subcomment.all(),many=True).data
